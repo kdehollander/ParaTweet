@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset='utf-8'>
-<title>Force Layout Example 1</title>
+<title>MAX</title>
 <style>
   .node {
      fill: black;
@@ -18,14 +18,17 @@
     stroke-width: 2px;
   }
   */
+  .svg {
+    padding: 100px;
+  }
 </style>
 </head>
 <body>
   <script src='http://d3js.org/d3.v3.min.js'></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
   <script>
-  var width = 2500,
-      height = 2500;
+  var width = 5000,
+      height = 5000;
 
   var strs = []; /*'hello there', 
               'hello there dear', 
@@ -62,8 +65,9 @@
   }
   //console.log(links);
   var svg = d3.select('body').append('svg')
-  .attr('width', width)
-  .attr('height', height);
+  .attr('width', '100%')
+  .attr('height', height)
+  .attr('class', 'svg');
 
 
      var force = d3.layout.force()
@@ -96,7 +100,7 @@
           num_similar_words++;
         }
       }
-      length = 1000 * (1 - (num_similar_words / ((max_length+min_length)/2)));
+      length = (1 - (num_similar_words / max_length));
       /*
       console.log({
         'source': d.source.index,
@@ -106,7 +110,7 @@
         'length': length
       })
       */
-      return length;
+      return length * 2000;
      });
 
      var link = svg.selectAll('.link')
