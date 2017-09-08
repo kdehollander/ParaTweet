@@ -2,10 +2,6 @@ graph = function() {
   var width = 5000;
   var height = 5000;
 
-  var clusterMaker = require('clusters');
-  clusterMaker.k(5);
-  clusterMaker.iterations(1000);
-
   var strs = []; 
 
   $.ajax({
