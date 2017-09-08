@@ -11,7 +11,7 @@ api = twitter.Api(consumer_key='aCxaOUuI8nVh2Qqp4zy0qakfz',
       access_token_secret='taf9r7T8LJw8kXlSNvT7trWcvstJ8uRP89sw528hQtx8w')
 tweets_w_responses = {}
 def main():
-   num_tweets = 1000000
+   num_tweets = 1000
    results = api.GetStreamFilter(track='-filter:links OR retweets')
    for tweet in results:
       if tweet.get('in_reply_to_status_id', None) == None:
@@ -48,6 +48,7 @@ def main():
                txt = re.sub('@'+rep_to+' ', '', txt)
             if pos_txt == '' or pos_txt == 'https':
                continue 
+            print(pos_txt)
             tweets_w_responses[str(tweet.get('in_reply_to_status_id', ''))] = {
                'text': pos_txt,
                'user': post.user.screen_name,
@@ -74,9 +75,9 @@ def clean_up_text(txt):
    txt = re.sub('[^A-Za-z ]+', '', txt)
    return txt
 
-@atexit.register
-def exit():
-   print(tweets_w_responses)
+#@atexit.register
+#def exit():
+   #print(tweets_w_responses)
 
 def get_limit():
    api_init()
