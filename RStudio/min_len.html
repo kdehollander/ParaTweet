@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset='utf-8'>
-<title>Force Layout Example 1</title>
+<title>MIN</title>
 <style>
   .node {
      fill: black;
@@ -18,13 +18,16 @@
     stroke-width: 2px;
   }
   */
+  .svg {
+    padding: 100px;
+  }
 </style>
 </head>
 <body>
   <script src='http://d3js.org/d3.v3.min.js'></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
   <script>
-  var width = 2500,
+  var width = 5000,
       height = 2500;
 
   var strs = []; /*'hello there', 
@@ -36,7 +39,7 @@
   $.ajax({
     async: false,
     type: 'GET',
-    url: 'http://52.53.184.154:80/posts.txt',
+    url: 'http://localhost:8000/posts.txt',
     success: function(file) {
       let posts = file.split('\n');
       for(let i = 0; i < posts.length; i++) {
@@ -63,7 +66,8 @@
   //console.log(links);
   var svg = d3.select('body').append('svg')
   .attr('width', width)
-  .attr('height', height);
+  .attr('height', height)
+  .attr('class', 'svg');
 
 
      var force = d3.layout.force()
@@ -96,7 +100,7 @@
           num_similar_words++;
         }
       }
-      length = 1000 * (1 - (num_similar_words / ((max_length+min_length)/2)));
+      length = (1 - (num_similar_words / min_length));
       /*
       console.log({
         'source': d.source.index,
@@ -106,7 +110,7 @@
         'length': length
       })
       */
-      return length;
+      return (height * length) / 2;
      });
 
      var link = svg.selectAll('.link')

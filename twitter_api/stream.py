@@ -12,7 +12,7 @@ api = twitter.Api(consumer_key='aCxaOUuI8nVh2Qqp4zy0qakfz',
       access_token_secret='taf9r7T8LJw8kXlSNvT7trWcvstJ8uRP89sw528hQtx8w')
 tweets_w_responses = {}
 def main():
-   num_tweets = 1000
+   num_tweets = 500
    results = api.GetStreamFilter(track='-filter:links OR retweets', delimited=500)
    for tweet in results:
       if tweet.get('in_reply_to_status_id', None) == None:
@@ -27,7 +27,7 @@ def main():
       txt = tweet.get('text', '')
       txt = clean_up_text(txt)
       # if for some reason, you can't get the tweet's text, or txt is not nothing,skip it
-      if txt == '':
+      if not txt or txt.isspace():
          continue 
       #print_error(txt)
       # if the tweet has not already been input, add
@@ -40,7 +40,7 @@ def main():
             pos_txt = post.text
             pos_txt = clean_up_text(pos_txt)
             # remove the username in the beginning
-            if pos_txt == '':
+            if not pos_txt or pos_txt.isspace() or len(pos_txt.split(' ')) <= 2:
                continue 
             print(pos_txt)
             tweets_w_responses[str(tweet.get('in_reply_to_status_id', ''))] = {
@@ -59,7 +59,7 @@ def print_error(s):
    print(s, file=sys.stderr)
 
 def clean_up_text(txt):
-   print(txt)
+   #print(txt)
    #remove any special chars, emojis, and numbers
    txt = re.sub('[^A-Za-z0-9\' ]+', '', txt)
    d = enchant.Dict('en_US')
@@ -73,8 +73,8 @@ def clean_up_text(txt):
    #remove any links in the text
    if "http" in txt:
       txt = re.sub('https[A-Za-z0-9./A-Za-z0-9]+', '', txt)
-   print(txt)
-   print('\n')
+   #print(txt)
+   #print('\n')
    return txt
 
 #@atexit.register
