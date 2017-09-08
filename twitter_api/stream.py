@@ -5,6 +5,7 @@ import urllib.parse
 import atexit
 import sys
 import re
+import enchant
 api = twitter.Api(consumer_key='aCxaOUuI8nVh2Qqp4zy0qakfz',
       consumer_secret='JS9wfzmkwgKGxuRIT6eGGhLVVaAq3qHBBHKwZELFHIp6pfk54o',
       access_token_key='365288422-1WHmtCRrQZaFsS3U3kxqVAWhf2zBukMrgClY5BD1',
@@ -12,7 +13,7 @@ api = twitter.Api(consumer_key='aCxaOUuI8nVh2Qqp4zy0qakfz',
 tweets_w_responses = {}
 def main():
    num_tweets = 1000
-   results = api.GetStreamFilter(track='-filter:links OR retweets')
+   results = api.GetStreamFilter(track='-filter:links OR retweets', delimited=500)
    for tweet in results:
       if tweet.get('in_reply_to_status_id', None) == None:
          continue 
@@ -25,12 +26,8 @@ def main():
          continue
       txt = tweet.get('text', '')
       txt = clean_up_text(txt)
-      # remove the username in the beginning
-      if "@" in txt:
-         rep_to =tweet.get('in_reply_to_screen_name', '')
-         txt = re.sub('@'+rep_to+' ', '', txt)
       # if for some reason, you can't get the tweet's text, or txt is not nothing,skip it
-      if txt == '' or txt == 'https':
+      if txt == '':
          continue 
       #print_error(txt)
       # if the tweet has not already been input, add
@@ -43,10 +40,7 @@ def main():
             pos_txt = post.text
             pos_txt = clean_up_text(pos_txt)
             # remove the username in the beginning
-            if "@" in txt:
-               rep_to =tweet.get('in_reply_to_screen_name', '')
-               txt = re.sub('@'+rep_to+' ', '', txt)
-            if pos_txt == '' or pos_txt == 'https':
+            if pos_txt == '':
                continue 
             print(pos_txt)
             tweets_w_responses[str(tweet.get('in_reply_to_status_id', ''))] = {
@@ -65,14 +59,22 @@ def print_error(s):
    print(s, file=sys.stderr)
 
 def clean_up_text(txt):
+   print(txt)
+   #remove any special chars, emojis, and numbers
+   txt = re.sub('[^A-Za-z0-9\' ]+', '', txt)
+   d = enchant.Dict('en_US')
+   for word in txt.split():
+      is_wrd = d.check(word) 
+      if is_wrd == False:
+         txt = txt.replace(word + ' ', '') 
    # if it is a retweet, remove 'RT ' so it will not mess up calculations later
    if "RT" in txt:
       txt = txt.replace('RT ', '')
    #remove any links in the text
    if "http" in txt:
-      txt = re.sub('https://[A-Za-z0-9./A-Za-z0-9]+', '', txt)
-   #remove any special chars, emojis, and numbers
-   txt = re.sub('[^A-Za-z ]+', '', txt)
+      txt = re.sub('https[A-Za-z0-9./A-Za-z0-9]+', '', txt)
+   print(txt)
+   print('\n')
    return txt
 
 #@atexit.register
