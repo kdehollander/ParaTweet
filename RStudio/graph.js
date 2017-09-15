@@ -13,7 +13,7 @@ graph = function() {
       for(let i = 0; i < posts.length; i++) {
         strs.push(posts[i]);
       }
-     };
+     }
   }); 
   var labels = [];
   for(let i = 0; i < strs.length; i++) {
@@ -128,8 +128,6 @@ graph = function() {
                  .attr('y', function(d) { return loc_y[d] - 10; })
                  .attr('id', function(d) { return d; })
                  .text(function(d) { return ''; });
-            console.log(loc_x);
-            console.log(loc_y);
 
      });
 

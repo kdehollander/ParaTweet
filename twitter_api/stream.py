@@ -6,13 +6,15 @@ import atexit
 import sys
 import re
 import enchant
+from nltk.stem import RegexpStemmer as RS
+
 api = twitter.Api(consumer_key='aCxaOUuI8nVh2Qqp4zy0qakfz',
       consumer_secret='JS9wfzmkwgKGxuRIT6eGGhLVVaAq3qHBBHKwZELFHIp6pfk54o',
       access_token_key='365288422-1WHmtCRrQZaFsS3U3kxqVAWhf2zBukMrgClY5BD1',
       access_token_secret='taf9r7T8LJw8kXlSNvT7trWcvstJ8uRP89sw528hQtx8w')
 tweets_w_responses = {}
 def main():
-   num_tweets = 500
+   num_tweets = 100000
    results = api.GetStreamFilter(track='-filter:links OR retweets', delimited=500)
    for tweet in results:
       if tweet.get('in_reply_to_status_id', None) == None:
