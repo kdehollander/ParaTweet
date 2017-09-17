@@ -10,11 +10,12 @@ import enchant
 from stemming.porter2 import stem
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.cluster import KMeans, MiniBatchKMeans
+from sklearn.decomposition import PCA
 from sklearn import metrics
 import emoji
 import numpy as np
 import plotly.plotly as py
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
 def bag_of_words(lst):
    vectorizer = CountVectorizer()
@@ -100,22 +101,21 @@ def main():
    print("deleted tweets = " + str(deleted_tweets))
 
    bow = bag_of_words(posts)
-   num_clusters = int(len(posts) / 3)
-   km = KMeans(n_clusters=num_clusters, init='k-means++', max_iter=num_clusters*100, n_init=25)
-   ret = km.fit(bow)
-   print(km.labels_)
-   plt.hist(km.labels_)
+   reduced_data = PCA(n_components=2).fit_transform(bow)
+   num_clusters = int(len(posts) / 15)
+   km = KMeans(n_clusters=num_clusters, init='k-means++', max_iter=num_clusters*1000, n_init=num_clusters*100)
+   ret = km.fit(reduced_data)
 
+   print(km.labels_)
    print(km.cluster_centers_)
    print(km.inertia_)
-   #for i in range(num_clusters):
-      #print(i)
-      #index = 0
-      #for l in km.labels_:
-         #if l == i:
-            #print('"'+posts[index]+'"')
-         #index = index + 1
-
+   for i in range(num_clusters):
+      print(i)
+      index = 0
+      for l in km.labels_:
+         if l == i:
+            print('"'+posts[index]+'"')
+         index = index + 1
 
 if __name__ == "__main__":
    main()
