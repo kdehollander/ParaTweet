@@ -4,6 +4,7 @@ import urllib.parse
 import atexit
 import sys
 import re
+from nltk.stem import RegexpStemmer as RS
 from stemming.porter2 import stem
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.cluster import KMeans, MiniBatchKMeans
