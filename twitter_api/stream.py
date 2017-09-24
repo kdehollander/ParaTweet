@@ -14,7 +14,7 @@ tweets_w_responses = {}
 posts = []
 replies = []
 def main():
-   num_tweets = 5000
+   num_tweets = 50000
    total_tweets = num_tweets
    results = api.GetStreamFilter(track='-filter:links OR retweets')
    for tweet in results:
@@ -41,10 +41,7 @@ def main():
             continue
          else:
             pos_txt = post.text
-            # remove the username in the beginning
             if not pos_txt or pos_txt.isspace() or len(pos_txt.split(' ')) <= 1:
-               #print("failed")
-               #print(pos_txt)
                continue 
             posts.append(pos_txt)
             tweets_w_responses[str(tweet.get('in_reply_to_status_id', ''))] = {
@@ -67,8 +64,8 @@ def exit():
    #with open('tweets.txt', 'w') as t:
       #json.dump(tweets_w_responses, t, ensure_ascii=False)
 
-   with open('posts.txt', mode='w') as p:
-      json.dump(posts, p, ensure_ascii=False)
+   with open('/Volumes/Twitter Data/tweets.txt', mode='w') as p:
+      json.dump(tweets_w_responses, p, ensure_ascii=False)
 
    #with open('replies.txt', 'w') as r:
       #json.dump(replies, r, ensure_ascii=False)
