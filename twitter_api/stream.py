@@ -32,26 +32,25 @@ def main():
       if not txt or txt.isspace():
          continue 
       #print_error(txt)
-      replies.append(txt)
+      #replies.append(txt)
       # if the tweet has not already been input, add
       if str(tweet.get('in_reply_to_status_id', '')) not in tweets_w_responses:
          try:
             post = api.GetStatus(tweet.get('in_reply_to_status_id', ''))
          except twitter.error.TwitterError as e:
+            print("There was an error with getting the post")
             continue
          else:
             pos_txt = post.text
             if not pos_txt or pos_txt.isspace() or len(pos_txt.split(' ')) <= 1:
                continue 
-            posts.append(pos_txt)
+            #posts.append(pos_txt)
             tweets_w_responses[str(tweet.get('in_reply_to_status_id', ''))] = {
                'text': pos_txt,
-               'user': post.user.screen_name,
                'replies': [] 
             }
       if str(tweet.get('id', '')) not in tweets_w_responses[str(tweet.get('in_reply_to_status_id', ''))]['replies']:
          tweets_w_responses[str(tweet.get('in_reply_to_status_id', ''))]['replies'].append({
-            'id': tweet.get('id', ''),
             'text': txt
          })
       num_tweets = num_tweets - 1

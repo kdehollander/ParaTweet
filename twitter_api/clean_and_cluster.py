@@ -69,8 +69,9 @@ def clean_up_text(txt, post):
 def main():
    #t = open('tweets.txt', 'r+')
    #r = open('replies.txt', 'r+')
-   p = open('/Volumes/Twitter Data/tweets.txt', 'r+')
+   p = open('tweets.txt', 'r+')
    tweets = json.load(p)
+   print(tweets)
 
    #tweets = t.read()
 
@@ -79,12 +80,10 @@ def main():
    #replies[len(replies) - 1] = replies[len(replies) - 1].replace(']', '')
 
    posts = []
-   for t in tweets:
-      posts.append(t.text) 
    #posts = p.read().split('", "')
    #posts[0] = posts[0].replace('[', '')
    #posts[len(posts) - 1] = posts[len(posts) - 1].replace(']', '')
-   print(len(posts))
+   #print(len(posts))
 
    deleted_tweets = 0
 
