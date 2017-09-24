@@ -4,12 +4,7 @@ import urllib.parse
 import atexit
 import sys
 import re
-from nltk.stem import RegexpStemmer as RS
-from stemming.porter2 import stem
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.cluster import KMeans, MiniBatchKMeans
-from sklearn import metrics
-import emoji
+import csv
 
 api = twitter.Api(consumer_key='aCxaOUuI8nVh2Qqp4zy0qakfz',
       consumer_secret='JS9wfzmkwgKGxuRIT6eGGhLVVaAq3qHBBHKwZELFHIp6pfk54o',
@@ -19,7 +14,7 @@ tweets_w_responses = {}
 posts = []
 replies = []
 def main():
-   num_tweets = 500
+   num_tweets = 5000
    total_tweets = num_tweets
    results = api.GetStreamFilter(track='-filter:links OR retweets')
    for tweet in results:
@@ -63,22 +58,24 @@ def main():
             'text': txt
          })
       num_tweets = num_tweets - 1
+      if num_tweets % 500 == 0:
+         print(num_tweets)
 
 @atexit.register
 def exit():
-   print(posts)
-   with open('tweets.txt', 'w') as t:
-      json.dump(tweets_w_responses, t, ensure_ascii=False)
+   #print(posts)
+   #with open('tweets.txt', 'w') as t:
+      #json.dump(tweets_w_responses, t, ensure_ascii=False)
 
-   with open('posts.txt', 'w') as p:
+   with open('posts.txt', mode='w') as p:
       json.dump(posts, p, ensure_ascii=False)
 
-   with open('replies.txt', 'w') as r:
-      json.dump(replies, r, ensure_ascii=False)
+   #with open('replies.txt', 'w') as r:
+      #json.dump(replies, r, ensure_ascii=False)
 
-   t.close()
+   #t.close()
    p.close()
-   r.close()
+   #r.close()
 
 if __name__ == "__main__":
    #api_init()
