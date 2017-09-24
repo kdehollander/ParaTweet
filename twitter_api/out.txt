@@ -1,5 +1,0 @@
-5361
-deleted tweets = 303
-4500 5360
-Starting KMeans
-Starting score analysis
