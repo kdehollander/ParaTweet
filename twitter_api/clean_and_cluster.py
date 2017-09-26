@@ -67,24 +67,15 @@ def clean_up_text(txt, post):
    return txt
 
 def main():
-   #t = open('tweets.txt', 'r+')
-   #r = open('replies.txt', 'r+')
    p = open('tweets.txt', 'r+')
    tweets = json.load(p)
    print(tweets)
 
-   #tweets = t.read()
-
-   #replies = r.read().split('", "')
-   #replies[0] = replies[0].replace('[', '')
-   #replies[len(replies) - 1] = replies[len(replies) - 1].replace(']', '')
-
    posts = []
-   #posts = p.read().split('", "')
-   #posts[0] = posts[0].replace('[', '')
-   #posts[len(posts) - 1] = posts[len(posts) - 1].replace(']', '')
-   #print(len(posts))
-
+   for k,v in tweets:
+      print(k)
+      print(v['text'])
+      
    deleted_tweets = 0
 
    need_to_be_deleted_posts = []
@@ -126,19 +117,6 @@ def main():
       pca = PCA(n_components=2).fit_transform(bow[first:last])
       reduced_data = np.concatenate((reduced_data, pca))
 
-   #print("Maximize Silhouette")
-   #s_scores = []
-   #ch_scores = []
-   #in_scores = []
-   #for i in range(3, 50):
-      #km = MiniBatchKMeans(n_clusters=i, init='k-means++')
-      #ret = km.fit(reduced_data)
-      #s_scores.append(metrics.silhouette_score(reduced_data, km.labels_))
-      #ch_scores.append(metrics.calinski_harabaz_score(reduced_data, km.labels_) / 5000)
-      #in_scores.append(km.inertia_ / 1000)
-      #if i % 10 == 0:
-         #print(i)
-
    print("Maximing CH Score")
    opt = differential_evolution(max_sil_score, bounds=([(2, 100)]), args=([reduced_data]))
    print(int(opt['x']))
@@ -146,24 +124,22 @@ def main():
    km = MiniBatchKMeans(n_clusters=int(opt['x']), init='k-means++')
    ret = km.fit(reduced_data)
       
-   #print("Starting Bayes")
-   #clf = GaussianNB()
-   #clf.fit(reduced_data, km.labels_)
-
-   #i = open('input.txt', 'r')
-   #s = i.read().split('\n')
-   #sc = clean_up_text(s[0], 1)
-   #print(sc)
-   #sl = [sc]
-   #sb = vectorizer.transform(sl).todense()
-   #print(sb)
-   #print("PCA new input")
-   #sr = PCA(n_components=3).fit_transform(sb)
-   #print(sr)
+   s = "Hello there I miss you very much"
+   sc = clean_up_text(s, 1)
+   print(sc)
+   sl = [sc]
+   sb = vectorizer.transform(sl).todense()
+   print(sb)
+   print("PCA new input")
+   sr = PCA(n_components=2).fit_transform(sb)
+   print(sr)
 
    #print("predict class")
-   #cl = clf.predict(sr)
-   #print(cl)
+   print(km.predict(sr))
+   neigh = NearestNeighbors(n_neighbors=10)
+   neigh.fit(reduced_data)
+   neighbors = neigh.kneighbors(sr)
+   print(neighbors)
 
    #index = 0
    #reduced_cluster_x = []
