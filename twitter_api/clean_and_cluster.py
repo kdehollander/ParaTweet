@@ -1,4 +1,4 @@
-import twitter 
+#import twitter 
 import json 
 import time 
 import urllib.parse
@@ -67,7 +67,7 @@ def clean_up_text(txt, post):
    return txt
 
 def main():
-   p = open('tweets.txt', 'r+')
+   p = open('small.txt', 'r+')
    tweets = json.load(p)
    #print(tweets)
 
