@@ -8,6 +8,8 @@ import csv
 import os
 from stemming.porter2 import stem
 import emoji
+import requests
+import time
 
 api = twitter.Api(consumer_key='aCxaOUuI8nVh2Qqp4zy0qakfz',
       consumer_secret='JS9wfzmkwgKGxuRIT6eGGhLVVaAq3qHBBHKwZELFHIp6pfk54o',
@@ -61,33 +63,36 @@ def main():
    tweets = json.load(t)
    print(len(tweets))
    rep = 0
+   num_deleted = 0
    tweets_to_be_deleted = []
    for tweet in tweets:
       while True:
          try:
-            print("Getting tweet:" + tweet)
             post = api.GetStatus(tweet)
-            break
+            time.sleep(1)
+            if rep % 200 == 0:
+               print("Getting tweet:" + tweet)
          except twitter.error.TwitterError as e:
-            print("Twitter error. Adding this tweet to be deleted later")
+            num_deleted = num_deleted + 1
+            if num_deleted % 50 == 0:
+               print("Deleted tweets= " + str(num_deleted))
             tweets_to_be_deleted.append(tweet)
             break
          except requests.exceptions.ConnectionError:
-            print("connection error. Going to sleep for a little")
-            sleep(60)
-      print("Foudn tweet")
-      txt = clean_up_text(post.text, 1)
-      if not txt or txt.isspace() or len(txt.split(' ')) <= 1:
-         tweets_to_be_deleted.append(tweet)
-      tweets[tweet]['text'] = txt
-      if rep % 500 == 0:
-         print(rep)
-      rep = rep + 1
+            continue
+         txt = clean_up_text(post.text, 1)
+         if not txt or txt.isspace() or len(txt.split(' ')) <= 1:
+            tweets_to_be_deleted.append(tweet)
+         tweets[tweet]['text'] = txt
+         if rep % 1000 == 0:
+            print(rep)
+         rep = rep + 1
+         break
    print("Deleting posts")
    for t in tweets_to_be_deleted:
       del tweets[t]
    print("Opening file")
-   with open('tweets.txt', 'w') as r:
+   with open('posts.txt', 'w') as r:
       json.dump(tweets, r, ensure_ascii=False)
 
 if __name__ == "__main__":

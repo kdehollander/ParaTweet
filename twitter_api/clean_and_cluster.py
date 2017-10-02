@@ -69,35 +69,13 @@ def clean_up_text(txt, post):
 def main():
    p = open('tweets.txt', 'r+')
    tweets = json.load(p)
-   print(tweets)
+   #print(tweets)
 
    posts = []
-   for k,v in tweets:
-      print(k)
-      print(v['text'])
+   for k,v in tweets.items():
+      posts.append(v['text'])
       
    deleted_tweets = 0
-
-   need_to_be_deleted_posts = []
-   for i in range((len(posts) - 1)):
-      posts[i] = clean_up_text(posts[i], 1)
-      if not posts[i] or posts[i].isspace() or len(posts[i].split(' ')) <= 1:
-         deleted_tweets = deleted_tweets + 1
-         need_to_be_deleted_posts.insert(0, i)
-   for inx in need_to_be_deleted_posts:
-      del posts[inx]
-   print(len(posts))
-
-   #need_to_be_deleted_replies = []
-   #for i in range((len(replies) - 1)):
-      #replies[i] = clean_up_text(replies[i], 0)
-      #if not replies[i] or replies[i].isspace() or len(replies[i].split(' ')) <= 1:
-         #deleted_tweets = deleted_tweets + 1
-         #need_to_be_deleted_replies.insert(0, i)
-   #for inx in need_to_be_deleted_replies:
-      #del replies[inx]
-
-   print("deleted tweets = " + str(deleted_tweets))
 
    print("Bag of words")
    vectorizer = CountVectorizer()
