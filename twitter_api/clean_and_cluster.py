@@ -1,4 +1,3 @@
-#import twitter 
 import json 
 import time 
 import urllib.parse
@@ -6,14 +5,14 @@ import atexit
 import sys
 import os
 import re
+import nltk
 from stemming.porter2 import stem
 from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.cluster import KMeans, MiniBatchKMeans
-from sklearn.decomposition import PCA
-from sklearn.naive_bayes import GaussianNB
+from sklearn.cluster import MiniBatchKMeans
+from sklearn.decomposition import TruncatedSVD
+from sklearn.neighbors import NearestNeighbors
 from sklearn import metrics
-from scipy.optimize import minimize, differential_evolution
-from scipy.misc import derivative
+from scipy.optimize import differential_evolution
 import emoji
 import numpy as np
 import plotly.plotly as py
@@ -43,13 +42,12 @@ def clean_up_text(txt, post):
       for char in word:
          if char == '\n' or char == ' ':
             txt = txt.replace(char, '')
-         
       if post == 1:
          new_word=stem(word)
          txt = txt.replace(word, new_word)
-      is_emoji=isEmoji(word)
-      #if is_emoji == True:
-         #txt = txt.replace(word, '') 
+         is_emoji=isEmoji(word)
+         if is_emoji == True:
+            txt = txt.replace(word, '') 
    if "#" in txt:
       txt = re.sub('#[a-zA-Z0-9]+', '', txt)
    if "&" in txt:
@@ -62,107 +60,78 @@ def clean_up_text(txt, post):
    #make token for link
    if "http" in txt:
       txt = re.sub('http[^ ]+', '', txt)
-   #print(txt)
-   #print('\n')
    return txt
 
 def main():
-   p = open('small.txt', 'r+')
+   p = open('posts.txt', 'r+')
    tweets = json.load(p)
    #print(tweets)
 
    posts = []
    for k,v in tweets.items():
       posts.append(v['text'])
-      
-   deleted_tweets = 0
 
-   print("Bag of words")
-   vectorizer = CountVectorizer()
-   bow = vectorizer.fit_transform(posts).todense()
-   print(bow)
-   print("PCA")
-   print("0 3999")
-   reduced_data = PCA(n_components=2).fit_transform(bow[0:3999])
-   print(reduced_data)
+   num_words = 0
+   for p in posts:
+      for word in p.split():
+         num_words = num_words + 1
+   avg_words = int(num_words / len(posts))
+      
+   #print("Bag of words")
+   vectorizer = CountVectorizer(ngram_range=(1,avg_words), lowercase=True, analyzer='word')
+   bow = vectorizer.fit_transform(posts)
+   print(bow.shape)
+   #print("PCA")
+   #print("0 3999")
+   pca_object = TruncatedSVD(n_components=2)
+   reduced_data = pca_object.fit_transform(bow[0:3999])
+   #print(reduced_data)
    rounds = int((len(posts) / 4000)) + 1
    for i in range(1, rounds):
       first = (i*4000)
       last = (((i+1) * 4000) - 1)
       if last > (len(posts) - 1):
          last = len(posts) - 1
-      print(str(first) + " " + str(last))
-      pca = PCA(n_components=2).fit_transform(bow[first:last])
-      reduced_data = np.concatenate((reduced_data, pca))
+      #print(str(first) + " " + str(last))
+      pca = pca_object.fit_transform(bow[first:last])
+      reduced_data = np.concatenate((reduced_data, pca)) 
+   #print("Maximing CH Score")
+   #opt = differential_evolution(max_sil_score, bounds=([(2, 100)]), args=([reduced_data]))
+   #print(int(opt['x']))
 
-   print("Maximing CH Score")
-   opt = differential_evolution(max_sil_score, bounds=([(2, 100)]), args=([reduced_data]))
-   print(int(opt['x']))
-
-   km = MiniBatchKMeans(n_clusters=int(opt['x']), init='k-means++')
+   km = MiniBatchKMeans(n_clusters=6, init='k-means++')
    ret = km.fit(reduced_data)
       
-   s = "Hello there I miss you very much"
-   sc = clean_up_text(s, 1)
-   print(sc)
-   sl = [sc]
-   sb = vectorizer.transform(sl).todense()
-   print(sb)
-   print("PCA new input")
-   sr = PCA(n_components=2).fit_transform(sb)
-   print(sr)
-
-   #print("predict class")
-   print(km.predict(sr))
-   neigh = NearestNeighbors(n_neighbors=10)
-   neigh.fit(reduced_data)
-   neighbors = neigh.kneighbors(sr)
-   print(neighbors)
-
-   #index = 0
-   #reduced_cluster_x = []
-   #reduced_cluster_y = []
-   #for l in km.labels_:
-      #if l == cl:
-         #reduced_cluster_x.append(reduced_data[index][0])
-         #reduced_cluster_y.append(reduced_data[index][1])
-      #index = index + 1
-   #plt.plot(reduced_cluster_x, reduced_cluster_y, 'k.', markersize=2)
-   #plt.plot(sr[0][0], sr[0][1], 'r.', markersize=2)
-   
-   # Step size of the mesh. Decrease to increase the quality of the VQ.
-   h = .02     # point in the mesh [x_min, x_max]x[y_min, y_max].
-
-   # Plot the decision boundary. For that, we will assign a color to each
-   x_min, x_max = reduced_data[:, 0].min() - 1, reduced_data[:, 0].max() + 1
-   y_min, y_max = reduced_data[:, 1].min() - 1, reduced_data[:, 1].max() + 1
-   xx, yy = np.meshgrid(np.arange(x_min, x_max, h), np.arange(y_min, y_max, h))
-
-   # Obtain labels for each point in mesh. Use last trained model.
-   Z = km.predict(np.c_[xx.ravel(), yy.ravel()])
-
-   # Put the result into a color plot
-   Z = Z.reshape(xx.shape)
-   plt.figure(1)
-   plt.clf()
-   plt.imshow(Z, interpolation='nearest',
-           extent=(xx.min(), xx.max(), yy.min(), yy.max()),
-           cmap=plt.cm.Paired,
-           aspect='auto', origin='lower')
-
-   plt.plot(reduced_data[:, 0], reduced_data[:, 1], 'k.', markersize=2)
-   # Plot the centroids as a white X
-   centroids = km.cluster_centers_
-   plt.scatter(centroids[:, 0], centroids[:, 1],
-            marker='x', s=169, linewidths=3,
-            color='w', zorder=10)
-   plt.title('K-means clustering on the digits dataset (PCA-reduced data)\n'
-          'Centroids are marked with white cross')
-   plt.xlim(x_min, x_max)
-   plt.ylim(y_min, y_max)
-   plt.xticks(())
-   plt.yticks(())
-   plt.show()
+   print("Enter text, then press enter!")
+   for s in sys.stdin:
+      sc = clean_up_text(s, 1)
+      print(sc)
+      sl = [sc]
+      sb = vectorizer.transform(sl)
+      sd = sb.todense()
+      #print("PCA new input")
+      sr = pca_object.transform(sd)
+      #print("Find closest neighbors")
+      neigh = NearestNeighbors(n_neighbors=3, algorithm='kd_tree')
+      neigh.fit(reduced_data)
+      neighbors = neigh.kneighbors(sr, return_distance=False)
+      replies = []
+      for n in neighbors:
+         for idx in n:
+            i = 0 
+            for key in tweets:
+               if i == idx:
+                  txt = clean_up_text(tweets[key]['replies'][0]['text'], 0)
+                  pos_txt = clean_up_text(tweets[key]['text'], 1)
+                  print("post: " + pos_txt)
+                  print("reply: " + txt)
+                  replies.append(txt)
+               i = i + 1
+      #bigram = CountVectorizer(ngram_range=(2,2))
+      #bigram.fit_transform(replies)
+      #print("\n")
+      #print(bigram.vocabulary_)
+      print("\n")
 
 if __name__ == "__main__":
    main()
