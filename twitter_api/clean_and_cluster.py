@@ -18,6 +18,20 @@ import numpy as np
 import plotly.plotly as py
 import matplotlib.pyplot as plt
 
+def decision_tree(first, vocab, level):
+   for tup in vocab:
+      b = tup.split()
+      if b[0] == first:
+         for i in vocab:
+            c = i.split()
+            if b[1] == c[0]:
+               for l in range(0,level):
+                  print("  ", end="")
+               print(b[1])
+               for l in range(0,level+1):
+                  print("  ", end="")
+               print(c[1])
+
 def max_sil_score(num_clusters, reduced_data):
    km = MiniBatchKMeans(n_clusters=int(num_clusters), init='k-means++')
    if len(np.shape(reduced_data)) > 2:
@@ -80,7 +94,6 @@ def main():
    #print("Bag of words")
    vectorizer = CountVectorizer(ngram_range=(1,avg_words), lowercase=True, analyzer='word')
    bow = vectorizer.fit_transform(posts)
-   print(bow.shape)
    #print("PCA")
    #print("0 3999")
    pca_object = TruncatedSVD(n_components=2)
@@ -105,7 +118,6 @@ def main():
    print("Enter text, then press enter!")
    for s in sys.stdin:
       sc = clean_up_text(s, 1)
-      print(sc)
       sl = [sc]
       sb = vectorizer.transform(sl)
       sd = sb.todense()
@@ -122,15 +134,16 @@ def main():
             for key in tweets:
                if i == idx:
                   txt = clean_up_text(tweets[key]['replies'][0]['text'], 0)
+                  txt = "<START> " + txt + " <END>"
                   pos_txt = clean_up_text(tweets[key]['text'], 1)
-                  print("post: " + pos_txt)
+                  #print("post: " + pos_txt)
                   print("reply: " + txt)
                   replies.append(txt)
                i = i + 1
-      #bigram = CountVectorizer(ngram_range=(2,2))
-      #bigram.fit_transform(replies)
-      #print("\n")
-      #print(bigram.vocabulary_)
+      bigram = CountVectorizer(ngram_range=(2,2), stop_words=None, analyzer='word', binary=True)
+      bigram.fit_transform(replies)
+      print(bigram.stop_words_)
+      decision_tree("start", bigram.vocabulary_, 0)
       print("\n")
 
 if __name__ == "__main__":
