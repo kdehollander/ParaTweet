@@ -5,7 +5,6 @@ import atexit
 import sys
 import os
 import re
-import nltk
 from stemming.porter2 import stem
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.cluster import MiniBatchKMeans

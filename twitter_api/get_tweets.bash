@@ -1,5 +1,4 @@
 while [ 0 ]
 do
-   python replies.py
-   python posts.py
+   /usr/bin/python replies.py
 done
