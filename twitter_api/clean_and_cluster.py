@@ -6,16 +6,18 @@ import sys
 import os
 import re
 from stemming.porter2 import stem
+from sklearn.externals import joblib
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.cluster import MiniBatchKMeans
 from sklearn.decomposition import TruncatedSVD
 from sklearn.neighbors import NearestNeighbors
 from sklearn import metrics
 from scipy.optimize import differential_evolution
+from nltk.corpus import words
 import emoji
 import numpy as np
 import plotly.plotly as py
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
 def decision_tree(first, vocab, level):
    for tup in vocab:
@@ -83,6 +85,7 @@ def main():
    posts = []
    for k,v in tweets.items():
       posts.append(v['text'])
+   print(len(posts))
 
    num_words = 0
    for p in posts:
@@ -90,60 +93,44 @@ def main():
          num_words = num_words + 1
    avg_words = int(num_words / len(posts))
       
-   #print("Bag of words")
-   vectorizer = CountVectorizer(ngram_range=(1,avg_words), lowercase=True, analyzer='word')
+   print("Bag of words")
+   v_vectorizer = CountVectorizer(ngram_range=(1,2), lowercase=True, analyzer='word')
+   v_bow = v_vectorizer.fit_transform(posts)
+   print(np.shape(v_bow))
+   engl_vectorizer = CountVectorizer(ngram_range=(1,2), lowercase=True, analyzer='word', vocabulary=set(words.words()))
+   e_bow = engl_vectorizer.fit_transform(posts)
+   print(np.shape(e_bow))
+   new_vocab = []
+   for key in v_vectorizer.vocabulary_:
+      new_vocab.append(key)
+   for key in engl_vectorizer.vocabulary_:
+      new_vocab.append(key)
+   print(len(new_vocab))
+   vectorizer = CountVectorizer(ngram_range=(1,2), lowercase=True, analyzer='word', vocabulary=set(new_vocab))
    bow = vectorizer.fit_transform(posts)
-   #print("PCA")
-   #print("0 3999")
+   print(np.shape(bow))
+   print("PCA")
+   print("0 999")
    pca_object = TruncatedSVD(n_components=2)
-   reduced_data = pca_object.fit_transform(bow[0:3999])
+   reduced_data = pca_object.fit_transform(bow[0:999])
    #print(reduced_data)
-   rounds = int((len(posts) / 4000)) + 1
+   rounds = int((len(posts) / 1000)) + 1
    for i in range(1, rounds):
-      first = (i*4000)
-      last = (((i+1) * 4000) - 1)
+      first = (i*1000)
+      last = (((i+1) * 1000) - 1)
       if last > (len(posts) - 1):
          last = len(posts) - 1
-      #print(str(first) + " " + str(last))
+      print(str(first) + " " + str(last))
       pca = pca_object.fit_transform(bow[first:last])
       reduced_data = np.concatenate((reduced_data, pca)) 
+   joblib.dump(reduced_data, "reduced_data.pickle")
    #print("Maximing CH Score")
    #opt = differential_evolution(max_sil_score, bounds=([(2, 100)]), args=([reduced_data]))
    #print(int(opt['x']))
 
    km = MiniBatchKMeans(n_clusters=6, init='k-means++')
    ret = km.fit(reduced_data)
-      
-   print("Enter text, then press enter!")
-   for s in sys.stdin:
-      sc = clean_up_text(s, 1)
-      sl = [sc]
-      sb = vectorizer.transform(sl)
-      sd = sb.todense()
-      #print("PCA new input")
-      sr = pca_object.transform(sd)
-      #print("Find closest neighbors")
-      neigh = NearestNeighbors(n_neighbors=3, algorithm='kd_tree')
-      neigh.fit(reduced_data)
-      neighbors = neigh.kneighbors(sr, return_distance=False)
-      replies = []
-      for n in neighbors:
-         for idx in n:
-            i = 0 
-            for key in tweets:
-               if i == idx:
-                  txt = clean_up_text(tweets[key]['replies'][0]['text'], 0)
-                  txt = "<START> " + txt + " <END>"
-                  pos_txt = clean_up_text(tweets[key]['text'], 1)
-                  #print("post: " + pos_txt)
-                  print("reply: " + txt)
-                  replies.append(txt)
-               i = i + 1
-      bigram = CountVectorizer(ngram_range=(2,2), stop_words=None, analyzer='word', binary=True)
-      bigram.fit_transform(replies)
-      print(bigram.stop_words_)
-      decision_tree("start", bigram.vocabulary_, 0)
-      print("\n")
 
+      
 if __name__ == "__main__":
    main()
