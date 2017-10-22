@@ -37,6 +37,11 @@ def main():
                'id': tweet.get('id', ''),
                'text': tweet.get('text', '')
             })
+      else:
+         tweets_w_responses[str(tweet.get('in_reply_to_status_id', ''))]['replies'].append({
+               'id': tweet.get('id', ''),
+               'text': tweet.get('text', '')
+            })
       num_tweets = num_tweets - 1
       if num_tweets % 100 == 0:
          print(num_tweets)

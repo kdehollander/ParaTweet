@@ -120,11 +120,12 @@ def main():
             i = 0 
             for key in tweets:
                if i == idx:
-                  txt = clean_up_text(tweets[key]['replies'][0]['text'], 0)
                   pos_txt = clean_up_text(tweets[key]['text'], 1)
                   print("post: " + pos_txt)
-                  print("reply: " + txt)
-                  replies.append(txt)
+                  for r in tweets[key]['replies']:
+                     txt = clean_up_text(r, 0)
+                     print("reply: " + txt)
+                     replies.append(txt)
                i = i + 1
       #bigram = CountVectorizer(ngram_range=(2,2))
       #bigram.fit_transform(replies)
