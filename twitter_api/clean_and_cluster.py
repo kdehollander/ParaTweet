@@ -14,24 +14,10 @@ from sklearn.neighbors import NearestNeighbors
 from sklearn import metrics
 from scipy.optimize import differential_evolution
 from nltk.corpus import words
+from nltk import CFG
 import emoji
 import numpy as np
 import plotly.plotly as py
-#import matplotlib.pyplot as plt
-
-def decision_tree(first, vocab, level):
-   for tup in vocab:
-      b = tup.split()
-      if b[0] == first:
-         for i in vocab:
-            c = i.split()
-            if b[1] == c[0]:
-               for l in range(0,level):
-                  print("  ", end="")
-               print(b[1])
-               for l in range(0,level+1):
-                  print("  ", end="")
-               print(c[1])
 
 def max_sil_score(num_clusters, reduced_data):
    km = MiniBatchKMeans(n_clusters=int(num_clusters), init='k-means++')
@@ -78,9 +64,8 @@ def clean_up_text(txt, post):
    return txt
 
 def main():
-   p = open('posts.txt', 'r+')
+   p = open('small.txt', 'r+')
    tweets = json.load(p)
-   #print(tweets)
 
    posts = []
    for k,v in tweets.items():
@@ -108,16 +93,21 @@ def main():
    print(len(new_vocab))
    vectorizer = CountVectorizer(ngram_range=(1,2), lowercase=True, analyzer='word', vocabulary=set(new_vocab))
    bow = vectorizer.fit_transform(posts)
+   nzs = bow.nonzero()
+   print(len(nzs[0]))
+   for rc in range(0, len(nzs[0])):
+      if rc % 10000 == 0:
+         print(rc)
+      bow[nzs[0][rc], nzs[0][rc]] = bow[nzs[0][rc], nzs[0][rc]] * 50
    print(np.shape(bow))
    print("PCA")
-   print("0 999")
+   print("0 1999")
    pca_object = TruncatedSVD(n_components=2)
-   reduced_data = pca_object.fit_transform(bow[0:999])
-   #print(reduced_data)
-   rounds = int((len(posts) / 1000)) + 1
+   reduced_data = pca_object.fit_transform(bow[0:1999])
+   rounds = int((len(posts) / 2000)) + 1
    for i in range(1, rounds):
-      first = (i*1000)
-      last = (((i+1) * 1000) - 1)
+      first = (i*2000)
+      last = (((i+1) * 2000) - 1)
       if last > (len(posts) - 1):
          last = len(posts) - 1
       print(str(first) + " " + str(last))
@@ -131,6 +121,57 @@ def main():
    km = MiniBatchKMeans(n_clusters=6, init='k-means++')
    ret = km.fit(reduced_data)
 
-      
+   print("Enter text, then press enter!")
+   for s in sys.stdin:
+      sc = clean_up_text(s, 1)
+      sl = [sc]
+      sb = vectorizer.transform(sl)
+      nzs = sb.nonzero()
+      print(len(nzs[0]))
+      for rc in range(0, len(nzs[0])):
+         sb[nzs[0][rc], nzs[0][rc]] = sb[nzs[0][rc], nzs[0][rc]] * 50
+      print(np.shape(sb))
+      #print("PCA new input")
+      sr = pca_object.transform(sb)
+      #print("Find closest neighbors")
+      neigh = NearestNeighbors(n_neighbors=3, algorithm='kd_tree')
+      neigh.fit(reduced_data)
+      neighbors = neigh.kneighbors(sr, return_distance=True)
+      print(neighbors)
+      replies = []
+      for n in neighbors[1]:
+         for idx in n:
+            i = 0 
+            for key in tweets:
+               if i == idx:
+                  txt = clean_up_text(tweets[key]['replies'][0]['text'], 0)
+                  txt = "<START> " + txt + " <END>"
+                  pos_txt = clean_up_text(tweets[key]['text'], 1)
+                  print("post: " + pos_txt)
+                  print("reply: " + txt)
+                  replies.append(txt)
+               i = i + 1
+      bigram = CountVectorizer(ngram_range=(2,2), stop_words=None, analyzer='word', binary=True, min_df=0, max_df=1)
+      bigram.fit_transform(replies)
+      vocab = []
+      for bg in bigram.vocabulary_:
+         vocab.append(bg)
+      graph = {}
+      graph = create_trie(graph, vocab, "start")
+      print(graph)
+
+def create_trie(graph, vocab, word):
+   if word not in graph:
+      graph[word] = []
+      for bg in vocab:
+         if bg.split()[0] == word:
+            graph[word].append(bg.split()[1])
+      for val in graph[word]:
+         if val == 'end':
+            continue
+         create_trie(graph, vocab, val)
+   return graph
+   
+
 if __name__ == "__main__":
    main()

@@ -1,11 +1,14 @@
 import sys
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.neighbors import NearestNeighbors
-from sklearn.expernals import joblib
+from sklearn.externals import joblib
 from clean_and_cluster import clean_up_text
 
 
 def main():
+   reduced_data = joblib.load('reduced_data.pickle')
+   vectorizer = joblib.load('vectorizer.pickle')
+   vectorizer.fit(reduced_data)
    print("Enter text, then press enter!")
    for s in sys.stdin:
       sc = clean_up_text(s, 1)
