@@ -79,6 +79,11 @@ def main():
       posts.append(v['text'])
    print(len(posts))
 
+   replies = []
+   for k,v in tweets.items():
+      for r in v['replies']:
+         replies.append(r['text'])
+
    num_words = 0
    for p in posts:
       for word in p.split():
@@ -106,9 +111,12 @@ def main():
    #Need to do this
    print(np.shape(bow))
    posts_tokenized = []
-   print("Pos_tagging")
+   print("Pos_tagging posts")
    for p in posts:
       posts_tokenized.append(posts_tokenized.append(pos_tag(p.split())))
+   print("Pos_tagging replies")
+   for r in replies:
+      posts_tokenized.append(posts_tokenized.append(pos_tag(r.split())))
    sentence_tokens = []
    for s in posts_tokenized:
       if s == None:

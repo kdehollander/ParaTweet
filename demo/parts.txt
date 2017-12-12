@@ -1,0 +1,12 @@
+CD: Cardinal number
+DT: Determiner
+IN: Preposition or subordinating conjunction
+JJ: Adjective
+NN: Noun, singluar or mass
+NNP: Proper noun, singular
+NNS: Noun, plural
+RB: Adverb
+VBD: Verb, past tense
+VBG: Verb, gerund or present participle
+VBP: Verb, non-3rd person singular present
+VBZ: Verb, 3rd person singluar present

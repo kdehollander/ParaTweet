@@ -1,4 +1,5 @@
 import json
+
 import string 
 import time 
 import urllib.parse
@@ -64,7 +65,7 @@ def main():
    bow = joblib.load('bow.pkl')
    tweets = joblib.load('tweets.pkl')
    pcfg = joblib.load('pcfg.pkl')
-   #print(pcfg)
+   #print(pcfg.keys())
    print("Enter text, then press enter!")
    for s in sys.stdin:
       sc = clean_up_text(s, 1)
@@ -82,6 +83,8 @@ def main():
                if i == idx:
                   for r in range(0, len(tweets[key]['replies'])):
                      txt = clean_up_text(tweets[key]['replies'][r]['text'], 0)
+                     #print(txt)
+                     #print(pos_tag(txt.split()))
                      #print("reply: " + txt)
                      for c in txt:
                         if c == '.' or c == '!' or c == '?':
@@ -99,18 +102,19 @@ def main():
       paths = create_sentences("<start>", "<end>", graph, [])
       path_pos = []
       for p in paths:
-         path_pos.append(pos_tag(p)) 
+         path_pos.append(pos_tag(p))
       pos_sents = []
       for p in path_pos:
          pos = ""
          for t in p:
             pos = pos + " " + t[1]
+         pos = pos.replace('$', '')
          pos_sents.append(pos)
       huer = []
       for p in pos_sents:
          h = 0
          p_sp = p.split()
-         if len(p_sp) < 2:
+         if len(p_sp) <= 4 or len(p_sp) > 10:
             h = -1
             huer.append(h)
             continue
@@ -120,18 +124,20 @@ def main():
             if first in pcfg :
                if second in pcfg[first]:
                   if h == 0:
-                     h = h
+                     h = 1 / pcfg[first][second]
                   else:
-                     h = h * (pcfg[first][second])
+                     h = h * (1 / pcfg[first][second])
                else:
-                  h = h * 5
+                  h = h / (len(p_sp))
             else:
-               h = h * 5
-         huer.append(h*len(p_sp))
-      while min(huer) == -1:
-         del huer[huer.index(min(huer))]
-         del paths[huer.index(min(huer))]
-      best_sent = paths[huer.index(min(huer))]
+               h = h / (len(p_sp))
+         h = h * len(p_sp)
+         huer.append(h)
+      try:
+         best_sent = paths[huer.index(max(huer))]
+      except:
+         print("I'm not sure what to say..")
+         continue
       bs_str = ""
       for w in best_sent:
         bs_str = bs_str + " " + w 

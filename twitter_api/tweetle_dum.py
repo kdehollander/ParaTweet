@@ -72,7 +72,7 @@ def main():
    tweets = joblib.load('tweets.pkl')
    pcfg = joblib.load('pcfg.pkl')
    while(1):
-      time.sleep(15 * 60)
+      time.sleep(30)
       mentions = joblib.load('mentions.pkl')
       for s in api.GetMentions():
          if s.id in mentions:
@@ -98,14 +98,14 @@ def main():
                         txt = "<START> " + txt + " <END>"
                         replies.append(txt)
                   i = i + 1
-         bigram = CountVectorizer(ngram_range=(2,2), stop_words=None, analyzer='word', binary=True)
+         bigram = CountVectorizer(ngram_range=(2,2), stop_words=None, analyzer='word', binary=True,token_pattern='[^ ]+');
          bigram.fit_transform(replies)
          vocab = []
          for bg in bigram.vocabulary_:
             vocab.append(bg)
          graph = {}
-         graph = create_trie(graph, vocab, "start")
-         paths = create_sentences("start", "end", graph, [])
+         graph = create_trie(graph, vocab, "<start>")
+         paths = create_sentences("<start>", "<end>", graph, [])
          path_pos = []
          for p in paths:
             path_pos.append(pos_tag(p)) 
@@ -114,12 +114,13 @@ def main():
             pos = ""
             for t in p:
                pos = pos + " " + t[1]
+            pos = pos.replace('$', '')
             pos_sents.append(pos)
          huer = []
          for p in pos_sents:
             h = 0
             p_sp = p.split()
-            if len(p_sp) < 2:
+            if len(p_sp) <= 4 or len(p_sp) > 10:
                h = -1
                huer.append(h)
                continue
@@ -129,16 +130,15 @@ def main():
                if first in pcfg :
                   if second in pcfg[first]:
                      if h == 0:
-                        h = pcfg[first][second]
+                        h = 1 / pcfg[first][second]
                      else:
-                        h = h + (pcfg[first][second])
+                        h = h * (1 / pcfg[first][second])
                   else:
-                     h = h / (len(p_sp) * 2)
+                     h = h / (len(p_sp))
                else:
-                  h = h / (len(p_sp) * 2)
-            huer.append(h/len(p_sp))
-         #paths = [x for x in huer if x != -1]
-         #huer = [x for x in huer if x != -1]
+                  h = h / (len(p_sp))
+            h = h * len(p_sp)
+            huer.append(h)
          best_sent = paths[huer.index(max(huer))]
          bs_str = ""
          for w in best_sent:
@@ -154,7 +154,7 @@ def main():
       #os.system("afplay txt.mp3")
 
 def create_sentences(start, end, graph, path=[]):
-   if start != "start" and start != "end":
+   if start != "<start>" and start != "<end>":
       path = path + [start]
    if start == end:
       return [path]
@@ -175,7 +175,7 @@ def create_trie(graph, vocab, word):
          if bg.split()[0] == word:
             graph[word].append(bg.split()[1])
       for val in graph[word]:
-         if val == 'end':
+         if val == '<end>':
             continue
          create_trie(graph, vocab, val)
    return graph
