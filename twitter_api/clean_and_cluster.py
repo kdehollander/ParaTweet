@@ -72,7 +72,7 @@ def clean_up_text(txt, post):
 def main():
    p = open('posts.txt', 'r+')
    tweets = json.load(p)
-   joblib.dump(tweets, 'tweets.pkl')
+   joblib.dump(tweets, 'listeners/tweets.pkl')
 
    posts = []
    for k,v in tweets.items():
@@ -104,10 +104,10 @@ def main():
       new_vocab.append(key)
    print(len(new_vocab))
    vectorizer = CountVectorizer(ngram_range=(1,2), lowercase=True, analyzer='word', vocabulary=set(new_vocab))
-   joblib.dump(vectorizer, 'vectorizer.pkl')
+   joblib.dump(vectorizer, 'listeners/vectorizer.pkl')
    #Need to do this
    bow = vectorizer.fit_transform(posts)
-   joblib.dump(bow, 'bow.pkl')
+   joblib.dump(bow, 'listeners/bow.pkl')
    #Need to do this
    print(np.shape(bow))
    posts_tokenized = []
@@ -153,7 +153,7 @@ def main():
          pcfg[v_sp[0]][v_sp[1]] = tfid.idf_[count] * pcfg[v_sp[0]][v_sp[1]]
       #pcfg[v_sp[0]][v_sp[1]] = pcfg[v_sp[0]][v_sp[1]] / len(tfid.idf_)
       count = count + 1
-   joblib.dump(pcfg, 'pcfg.pkl')
+   joblib.dump(pcfg, 'listeners/pcfg.pkl')
    #print(pcfg)
    #print("Maximing CH Score")
    #opt = differential_evolution(max_sil_score, bounds=([(2, 100)]), args=([bow]))
