@@ -24,10 +24,10 @@ import numpy as np
 import plotly.plotly as py
 from gtts import gTTS
 
-api = twitter.Api(consumer_key='HR9Oxk8uc3eIPiUrModI7EaXZ',
-      consumer_secret='pvLwOLHaXGyXoFvEa53VBfPSqcc0A9TlNGjLIBq0WKSxlaGQF9',
-      access_token_key='935180065268051968-hRHPNic7YcpbyTkj19NgKbqlJPpURyq',
-      access_token_secret='a81B1AQomgx3gUJdt6m19CdMtfxdkKfQo5F822t2pK27z',
+api = twitter.Api(consumer_key='enter_key',
+      consumer_secret='enter_secret',
+      access_token_key='enter_token_key',
+      access_token_secret='enter_token_secret',
       sleep_on_rate_limit=True)
 
 def isEmoji(word):

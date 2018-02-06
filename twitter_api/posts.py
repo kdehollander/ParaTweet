@@ -11,10 +11,10 @@ import emoji
 import requests
 import time
 
-api = twitter.Api(consumer_key='aCxaOUuI8nVh2Qqp4zy0qakfz',
-      consumer_secret='JS9wfzmkwgKGxuRIT6eGGhLVVaAq3qHBBHKwZELFHIp6pfk54o',
-      access_token_key='365288422-1WHmtCRrQZaFsS3U3kxqVAWhf2zBukMrgClY5BD1',
-      access_token_secret='taf9r7T8LJw8kXlSNvT7trWcvstJ8uRP89sw528hQtx8w',
+api = twitter.Api(consumer_key='enter_key',
+      consumer_secret='enter_secret',
+      access_token_key='enter_token_key',
+      access_token_secret='enter_secret',
       sleep_on_rate_limit=True)
 
 tweets = {}
